@@ -40,7 +40,17 @@ const createOwner = async (
 
 };
 
+const findOwnerById = async (id) => {
+
+    return await pool.query(
+        "SELECT * FROM owners WHERE id=$1",
+        [id]
+    );
+
+};
+
 module.exports = {
     findOwnerByEmail,
-    createOwner
+    createOwner,
+    findOwnerById
 };

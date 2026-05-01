@@ -4,10 +4,10 @@ const verifyToken = (req, res, next) => {
 
     try {
 
-        const token =
+        const authHeader =
             req.headers.authorization;
 
-        if (!token) {
+        if (!authHeader) {
 
             return res.status(401).json({
                 success: false,
@@ -16,10 +16,14 @@ const verifyToken = (req, res, next) => {
 
         }
 
-        const decoded = jwt.verify(
-            token,
-            process.env.JWT_SECRET
-        );
+        const token =
+            authHeader.split(" ")[1];
+
+        const decoded =
+            jwt.verify(
+                token,
+                process.env.JWT_SECRET
+            );
 
         req.user = decoded;
 
