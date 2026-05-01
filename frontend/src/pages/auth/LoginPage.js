@@ -1,70 +1,187 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Shield, Mail, Lock } from "lucide-react";
+
+import {
+  Shield,
+  Mail,
+  Lock,
+  Eye,
+  EyeOff
+} from "lucide-react";
+
+import {
+  loginUser
+} from "../../api/authApi";
 
 import "../../styles/auth.css";
-import { loginUser } from "../../api/authApi";
 
 function LoginPage() {
 
-  const navigate = useNavigate();
+  const navigate =
+    useNavigate();
 
-  const [formData, setFormData] = useState({
-    email: "",
-    password: ""
-  });
+  const [showPassword,
+    setShowPassword] =
+    useState(false);
 
-  const [loading, setLoading] = useState(false);
+  const [toastMessage,
+    setToastMessage] =
+    useState("");
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
+  const [formData,
+    setFormData] =
+    useState({
+      email: "",
+      password: ""
     });
+
+  const showToast =
+    (message) => {
+
+    setToastMessage(
+      message
+    );
+
+    setTimeout(() => {
+
+      setToastMessage(
+        ""
+      );
+
+    }, 2500);
+
   };
 
-  const handleLogin = async (e) => {
+  const handleChange =
+    (e) => {
+
+    setFormData({
+      ...formData,
+      [e.target.name]:
+        e.target.value
+    });
+
+  };
+
+  const handleLogin =
+    async (e) => {
+
     e.preventDefault();
+
+    if (
+      !formData.email ||
+      !formData.password
+    ) {
+
+      showToast(
+        "Please fill all fields"
+      );
+
+      return;
+
+    }
+
+    const emailRegex =
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (
+      !emailRegex.test(
+        formData.email
+      )
+    ) {
+
+      showToast(
+        "Enter valid email"
+      );
+
+      return;
+
+    }
+
+    if (
+      formData.password.length < 8
+    ) {
+
+      showToast(
+        "Password must be at least 8 characters"
+      );
+
+      return;
+
+    }
 
     try {
 
-      setLoading(true);
-
-      const res = await loginUser(formData);
+      const response =
+        await loginUser(
+          formData
+        );
 
       localStorage.setItem(
         "token",
-        res.data.token
+        response.data.token
       );
 
-      navigate("/dashboard");
-
-    } catch (error) {
-
-      alert(
-        error.response?.data?.message ||
-        "Login failed"
+      showToast(
+        "Login successful"
       );
 
-    } finally {
+      setTimeout(() => {
 
-      setLoading(false);
+        navigate(
+          "/dashboard"
+        );
+
+      }, 1500);
+
+    } catch {
+
+      showToast(
+        "Invalid credentials"
+      );
 
     }
+
   };
 
   return (
     <div className="auth-page">
 
+      {
+
+        toastMessage && (
+
+          <div className="toast-box">
+
+            {
+              toastMessage
+            }
+
+          </div>
+
+        )
+
+      }
+
       <div className="auth-card">
 
         <div className="logo-box">
+
           <Shield size={28} />
+
         </div>
 
-        <h2>CyberNest Login</h2>
+        <h2>
 
-        <form onSubmit={handleLogin}>
+          Login
+
+        </h2>
+
+        <form
+          onSubmit={
+            handleLogin
+          }
+        >
 
           <div className="input-group">
 
@@ -73,8 +190,10 @@ function LoginPage() {
             <input
               type="email"
               name="email"
-              placeholder="Enter Email"
-              onChange={handleChange}
+              placeholder="Email"
+              onChange={
+                handleChange
+              }
             />
 
           </div>
@@ -84,29 +203,56 @@ function LoginPage() {
             <Lock size={16} />
 
             <input
-              type="password"
+              type={
+                showPassword
+                  ? "text"
+                  : "password"
+              }
               name="password"
-              placeholder="Enter Password"
-              onChange={handleChange}
+              placeholder="Password"
+              onChange={
+                handleChange
+              }
             />
+
+            <span
+              className="eye-icon"
+              onClick={() =>
+                setShowPassword(
+                  !showPassword
+                )
+              }
+            >
+
+              {
+
+                showPassword
+                ? <EyeOff size={16} />
+                : <Eye size={16} />
+
+              }
+
+            </span>
 
           </div>
 
           <button type="submit">
 
-            {
-              loading
-              ? "Please Wait..."
-              : "Login"
-            }
+            Login
 
           </button>
 
         </form>
 
-        <p onClick={() => navigate("/signup")}>
+        <p
+          onClick={() =>
+            navigate(
+              "/signup"
+            )
+          }
+        >
 
-          Create Account
+          Create account?
 
         </p>
 
