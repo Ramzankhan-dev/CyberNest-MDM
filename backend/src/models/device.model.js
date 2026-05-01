@@ -49,7 +49,38 @@ const findDeviceById = async (
 
 };
 
+const getDevicesByOwnerId = async (
+    owner_id
+) => {
+
+    return await pool.query(
+        `
+        SELECT * FROM devices
+        WHERE owner_id=$1
+        ORDER BY id DESC
+        `,
+        [owner_id]
+    );
+
+};
+
+const getDeviceById = async (
+    deviceId
+) => {
+
+    return await pool.query(
+        `
+        SELECT * FROM devices
+        WHERE id=$1
+        `,
+        [deviceId]
+    );
+
+};
+
 module.exports = {
     createDevice,
-     findDeviceById
+    findDeviceById,
+    getDevicesByOwnerId,
+    getDeviceById
 };

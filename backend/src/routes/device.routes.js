@@ -3,8 +3,13 @@ const express = require("express");
 const router =
 express.Router();
 
+const verifyToken =
+require("../middleware/auth.middleware");
+
 const {
-    registerDevice
+    registerDevice,
+    getAllDevices,
+    getSingleDevice
 } = require(
     "../controllers/device.controller"
 );
@@ -12,6 +17,18 @@ const {
 router.post(
     "/register",
     registerDevice
+);
+
+router.get(
+    "/all",
+    verifyToken,
+    getAllDevices
+);
+
+router.get(
+    "/:id",
+    verifyToken,
+    getSingleDevice
 );
 
 module.exports = router;

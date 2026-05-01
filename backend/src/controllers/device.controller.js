@@ -7,7 +7,9 @@ const {
 
 const {
     createDevice,
-    findDeviceById
+    findDeviceById,
+    getDevicesByOwnerId,
+    getDeviceById
 } = require(
     "../models/device.model"
 );
@@ -104,6 +106,87 @@ const registerDevice = async (
 
 };
 
+const getAllDevices = async (
+    req,
+    res
+) => {
+
+    try {
+
+        const ownerId =
+            req.user.id;
+
+        const devices =
+            await getDevicesByOwnerId(
+                ownerId
+            );
+
+        return res.status(200).json({
+            success: true,
+            data:
+            devices.rows
+        });
+
+    } catch (error) {
+
+        return res.status(500).json({
+            success: false,
+            message:
+            error.message
+        });
+
+    }
+
+};
+
+const getSingleDevice = async (
+    req,
+    res
+) => {
+
+    try {
+
+        const {
+            id
+        } = req.params;
+
+        const device =
+            await getDeviceById(
+                id
+            );
+
+        if (
+            device.rows.length === 0
+        ) {
+
+            return res.status(404).json({
+                success: false,
+                message:
+                "Device not found"
+            });
+
+        }
+
+        return res.status(200).json({
+            success: true,
+            data:
+            device.rows[0]
+        });
+
+    } catch (error) {
+
+        return res.status(500).json({
+            success: false,
+            message:
+            error.message
+        });
+
+    }
+
+};
+
 module.exports = {
-    registerDevice
+    registerDevice,
+    getAllDevices,
+    getSingleDevice
 };
