@@ -4,6 +4,7 @@ const cors = require("cors");
 const authRoutes = require("./routes/auth.routes");
 const enrollmentRoutes =require("./routes/enrollment.routes");
 const deviceRoutes =require("./routes/device.routes");
+const commandRoutes =require("./routes/command.routes");
 
 const app = express();
 
@@ -27,5 +28,8 @@ app.use("/api/enrollment", enrollmentRoutes);
 
 //device detail
 app.use("/api/device",deviceRoutes);
+
+//commands 
+app.use("/api/command",commandRoutes);
 
 module.exports = app;

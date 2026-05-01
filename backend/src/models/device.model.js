@@ -107,10 +107,27 @@ const updateDeviceStatus = async (
 
 };
 
+const getOnlineDeviceById = async (
+    device_id
+) => {
+
+    return await pool.query(
+        `
+        SELECT * FROM devices
+        WHERE device_id=$1
+        AND is_online=true
+        `,
+        [device_id]
+    );
+
+};
+
+
 module.exports = {
     createDevice,
     findDeviceById,
     getDevicesByOwnerId,
     getDeviceById,
-    updateDeviceStatus
+    updateDeviceStatus,
+    getOnlineDeviceById 
 };
