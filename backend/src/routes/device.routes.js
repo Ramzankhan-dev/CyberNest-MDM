@@ -9,7 +9,8 @@ require("../middleware/auth.middleware");
 const {
     registerDevice,
     getAllDevices,
-    getSingleDevice
+    getSingleDevice,
+    syncDeviceStatus
 } = require(
     "../controllers/device.controller"
 );
@@ -29,6 +30,11 @@ router.get(
     "/:id",
     verifyToken,
     getSingleDevice
+);
+
+router.post(
+    "/status",
+    syncDeviceStatus
 );
 
 module.exports = router;

@@ -9,10 +9,31 @@ const {
     createDevice,
     findDeviceById,
     getDevicesByOwnerId,
-    getDeviceById
+    getDeviceById,
+    updateDeviceStatus
 } = require(
     "../models/device.model"
 );
+
+
+// Pakistan time formatter
+const formatToPakistanTime = (
+    date
+) => {
+
+    if (!date) return null;
+
+    return new Date(date)
+        .toLocaleString(
+            "en-PK",
+            {
+                timeZone:
+                "Asia/Karachi"
+            }
+        );
+
+};
+
 
 const registerDevice = async (
     req,
@@ -86,12 +107,20 @@ const registerDevice = async (
             enrollment_code
         );
 
+        const device =
+            deviceResult.rows[0];
+
+        device.created_at =
+            formatToPakistanTime(
+                device.created_at
+            );
+
         return res.status(201).json({
             success: true,
             message:
             "Device registered successfully",
             data:
-            deviceResult.rows[0]
+            device
         });
 
     } catch (error) {
@@ -105,6 +134,7 @@ const registerDevice = async (
     }
 
 };
+
 
 const getAllDevices = async (
     req,
@@ -121,10 +151,29 @@ const getAllDevices = async (
                 ownerId
             );
 
+        const formattedDevices =
+            devices.rows.map(
+                (device) => ({
+
+                    ...device,
+
+                    created_at:
+                    formatToPakistanTime(
+                        device.created_at
+                    ),
+
+                    last_seen:
+                    formatToPakistanTime(
+                        device.last_seen
+                    )
+
+                })
+            );
+
         return res.status(200).json({
             success: true,
             data:
-            devices.rows
+            formattedDevices
         });
 
     } catch (error) {
@@ -138,6 +187,7 @@ const getAllDevices = async (
     }
 
 };
+
 
 const getSingleDevice = async (
     req,
@@ -150,13 +200,13 @@ const getSingleDevice = async (
             id
         } = req.params;
 
-        const device =
+        const deviceResult =
             await getDeviceById(
                 id
             );
 
         if (
-            device.rows.length === 0
+            deviceResult.rows.length === 0
         ) {
 
             return res.status(404).json({
@@ -167,10 +217,23 @@ const getSingleDevice = async (
 
         }
 
+        const device =
+            deviceResult.rows[0];
+
+        device.created_at =
+            formatToPakistanTime(
+                device.created_at
+            );
+
+        device.last_seen =
+            formatToPakistanTime(
+                device.last_seen
+            );
+
         return res.status(200).json({
             success: true,
             data:
-            device.rows[0]
+            device
         });
 
     } catch (error) {
@@ -185,8 +248,78 @@ const getSingleDevice = async (
 
 };
 
+
+const syncDeviceStatus = async (
+    req,
+    res
+) => {
+
+    try {
+
+        const {
+            device_id,
+            battery_level,
+            network_type,
+            is_online
+        } = req.body;
+
+        const updatedDevice =
+            await updateDeviceStatus(
+                device_id,
+                battery_level,
+                network_type,
+                is_online
+            );
+
+        if (
+            updatedDevice.rows.length === 0
+        ) {
+
+            return res.status(404).json({
+                success: false,
+                message:
+                "Device not found"
+            });
+
+        }
+
+        const device =
+            updatedDevice.rows[0];
+
+        device.created_at =
+            formatToPakistanTime(
+                device.created_at
+            );
+
+        device.last_seen =
+            formatToPakistanTime(
+                device.last_seen
+            );
+
+        return res.status(200).json({
+            success: true,
+            message:
+            "Device status updated",
+            data:
+            device
+        });
+
+    } catch (error) {
+
+        return res.status(500).json({
+            success: false,
+            message:
+            error.message
+        });
+
+    }
+
+};
+
+
 module.exports = {
     registerDevice,
     getAllDevices,
-    getSingleDevice
+    getSingleDevice,
+    syncDeviceStatus
 };
