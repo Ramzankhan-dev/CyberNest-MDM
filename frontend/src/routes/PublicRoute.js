@@ -3,7 +3,7 @@ import React from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-export default function ProtectedRoute({ children }) {
+export default function PublicRoute({ children }) {
   const { token, loading } = useAuth();
 
   if (loading) {
@@ -22,11 +22,11 @@ export default function ProtectedRoute({ children }) {
     );
   }
 
-  // If no token, redirect to login
-  if (!token) {
-    return <Navigate to="/login" replace />;
+  // If already logged in, redirect to dashboard
+  if (token) {
+    return <Navigate to="/dashboard" replace />;
   }
 
-  // If token exists, show dashboard
+  // If not logged in, show public page
   return children;
 }

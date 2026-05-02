@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { getProfile } from "../api/authApi";
 
@@ -40,8 +41,18 @@ export function AuthProvider({ children }) {
     setAdmin(null);
   };
 
+  // Helper function to check if user is authenticated
+  const isAuthenticated = !!token;
+
   return (
-    <AuthContext.Provider value={{ token, admin, loading, login, logout }}>
+    <AuthContext.Provider value={{ 
+      token, 
+      admin, 
+      loading, 
+      login, 
+      logout,
+      isAuthenticated  // Added this for easier checks
+    }}>
       {children}
     </AuthContext.Provider>
   );

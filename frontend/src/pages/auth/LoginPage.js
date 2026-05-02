@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
 import {
   Shield,
   Mail,
@@ -9,255 +8,135 @@ import {
   EyeOff
 } from "lucide-react";
 
-import {
-  loginUser
-} from "../../api/authApi";
-
+import { loginUser } from "../../api/authApi";
+import { useAuth } from "../../context/AuthContext";
 import "../../styles/auth.css";
 
 function LoginPage() {
+  const navigate = useNavigate();
+  const { login } = useAuth(); // Get login function from context
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+  const [formData, setFormData] = useState({
+    email: "",
+    password: ""
+  });
 
-  const navigate =
-    useNavigate();
-
-  const [showPassword,
-    setShowPassword] =
-    useState(false);
-
-  const [toastMessage,
-    setToastMessage] =
-    useState("");
-
-  const [formData,
-    setFormData] =
-    useState({
-      email: "",
-      password: ""
-    });
-
-  const showToast =
-    (message) => {
-
-    setToastMessage(
-      message
-    );
-
+  const showToast = (message) => {
+    setToastMessage(message);
     setTimeout(() => {
-
-      setToastMessage(
-        ""
-      );
-
+      setToastMessage("");
     }, 2500);
-
   };
 
-  const handleChange =
-    (e) => {
-
+  const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]:
-        e.target.value
+      [e.target.name]: e.target.value
     });
-
   };
 
-  const handleLogin =
-    async (e) => {
-
+  const handleLogin = async (e) => {
     e.preventDefault();
 
-    if (
-      !formData.email ||
-      !formData.password
-    ) {
-
-      showToast(
-        "Please fill all fields"
-      );
-
+    if (!formData.email || !formData.password) {
+      showToast("Please fill all fields");
       return;
-
     }
 
-    const emailRegex =
-      /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-    if (
-      !emailRegex.test(
-        formData.email
-      )
-    ) {
-
-      showToast(
-        "Enter valid email"
-      );
-
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      showToast("Enter valid email");
       return;
-
     }
 
-    if (
-      formData.password.length < 8
-    ) {
-
-      showToast(
-        "Password must be at least 8 characters"
-      );
-
+    if (formData.password.length < 8) {
+      showToast("Password must be at least 8 characters");
       return;
-
     }
+
+    setLoading(true);
 
     try {
-
-      const response =
-        await loginUser(
-          formData
-        );
-
-      localStorage.setItem(
-        "token",
-        response.data.token
-      );
-
-      showToast(
-        "Login successful"
-      );
-
+      const response = await loginUser(formData);
+      
+      // Extract token and admin data from response
+      const token = response.data.token;
+      const adminData = response.data.admin || response.data.user;
+      
+      // Store using AuthContext's login function
+      login(token, adminData);
+      
+      showToast("Login successful");
+      
+      // Navigate to dashboard
       setTimeout(() => {
-
-        navigate(
-          "/dashboard"
-        );
-
-      }, 1500);
-
-    } catch {
-
-      showToast(
-        "Invalid credentials"
-      );
-
+        navigate("/dashboard", { replace: true });
+      }, 1000);
+      
+    } catch (error) {
+      console.error("Login error:", error);
+      showToast(error.response?.data?.message || "Invalid credentials");
+      setLoading(false);
     }
-
   };
 
   return (
     <div className="auth-page">
-
-      {
-
-        toastMessage && (
-
-          <div className="toast-box">
-
-            {
-              toastMessage
-            }
-
-          </div>
-
-        )
-
-      }
+      {toastMessage && (
+        <div className="toast-box">
+          {toastMessage}
+        </div>
+      )}
 
       <div className="auth-card">
-
         <div className="logo-box">
-
           <Shield size={28} />
-
         </div>
 
-        <h2>
+        <h2>Login</h2>
 
-          Login
-
-        </h2>
-
-        <form
-          onSubmit={
-            handleLogin
-          }
-        >
-
+        <form onSubmit={handleLogin}>
           <div className="input-group">
-
             <Mail size={16} />
-
             <input
               type="email"
               name="email"
               placeholder="Email"
-              onChange={
-                handleChange
-              }
+ value={formData.email}
+              onChange={handleChange}
+              disabled={loading}
             />
-
           </div>
 
           <div className="input-group">
-
             <Lock size={16} />
-
             <input
-              type={
-                showPassword
-                  ? "text"
-                  : "password"
-              }
+              type={showPassword ? "text" : "password"}
               name="password"
               placeholder="Password"
-              onChange={
-                handleChange
-              }
+ value={formData.password}
+              onChange={handleChange}
+              disabled={loading}
             />
-
             <span
               className="eye-icon"
-              onClick={() =>
-                setShowPassword(
-                  !showPassword
-                )
-              }
+              onClick={() => setShowPassword(!showPassword)}
             >
-
-              {
-
-                showPassword
-                ? <EyeOff size={16} />
-                : <Eye size={16} />
-
-              }
-
+              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
             </span>
-
           </div>
 
-          <button type="submit">
-
-            Login
-
+          <button type="submit" disabled={loading}>
+            {loading ? "Logging in..." : "Login"}
           </button>
-
         </form>
 
-        <p
-          onClick={() =>
-            navigate(
-              "/signup"
-            )
-          }
-        >
-
+        <p onClick={() => navigate("/signup")}>
           Create account?
-
         </p>
-
       </div>
-
     </div>
   );
 }

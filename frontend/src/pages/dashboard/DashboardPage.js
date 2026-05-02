@@ -361,9 +361,9 @@ export default function DashboardPage() {
   }, []);
 
   const handleLogout = () => {
-    logout();
-    navigate("/login");
-  };
+  logout(); // From useAuth() hook
+  navigate("/login", { replace: true }); // Use replace to clear history
+};
 
   const goTo = (page) => {
     setActivePage(page);
